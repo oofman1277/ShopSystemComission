@@ -1,0 +1,81 @@
+---
+description: Luau formatting and conventions
+alwaysApply: true
+---
+
+# Luau Style Guide
+
+## Naming
+
+Functions use PascalCase.
+
+```lua
+function Cannon:Fire()
+end
+
+function Cannon:GetState()
+end
+```
+
+Variables use camelCase.
+
+```lua
+local currentYaw
+local reloadState
+local cannonState
+```
+
+Constants use SCREAMING_SNAKE_CASE.
+
+```lua
+MAX_ROTATION
+DEFAULT_FIRE_RATE
+```
+
+Module names use PascalCase.
+
+```lua
+CannonManager
+CannonReload
+FastCastProvider
+```
+
+Types use PascalCase.
+
+```lua
+type CannonState = {
+    ...
+}
+```
+
+---
+
+## Formatting
+
+Leave one blank line between functions.
+
+Prefer early returns.
+
+```lua
+if not state then
+    return
+end
+```
+
+Never write
+
+```lua
+if state then
+    ...
+end
+```
+
+when an early return is possible.
+
+---
+
+Keep functions short.
+
+Aim for under 40 lines.
+
+Split large functions into helper methods.

@@ -1,0 +1,29 @@
+{
+  "name": "MoneyShop",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "EconomyShared": {
+        "$ignoreUnknownInstances": true,
+        "$path": "src/EconomyShared"
+      }
+    },
+
+    "ServerScriptService": {
+      "EconomyServer": {
+        "$ignoreUnknownInstances": true,
+        "$path": "src/EconomyServer"
+      }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "EconomyClient": {
+          "$ignoreUnknownInstances": true,
+          "$path": "src/EconomyClient"
+        }
+      }
+    }
+  }
+}

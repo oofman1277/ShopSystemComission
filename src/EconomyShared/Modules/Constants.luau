@@ -1,5 +1,6 @@
 local Constants = {
-    CurrencyAttributeName = "Greenbacks"
+    CURRENCY_ATTRIBUTE_NAME = "Greenbacks"
+    
     
 }
 

@@ -17,6 +17,26 @@
       }
     },
 
+    "StarterGui": {
+      "$ignoreUnknownInstances": true,
+      "ActiveJobs": {
+        "$ignoreUnknownInstances": true,
+        "$className": "ScreenGui",
+        "JobUpdater": {
+          "$path": "src/StarterGui/ActiveJobs/JobUpdater.client.luau",
+          "$ignoreUnknownInstances": true
+        }
+      },
+      "Currency": {
+        "$ignoreUnknownInstances": true,
+        "$className": "ScreenGui",
+        "CurrencyUpdater": {
+          "$path": "src/StarterGui/Currency/CurrencyUpdater.client.luau",
+          "$ignoreUnknownInstances": true
+        }
+      }
+    },
+
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "EconomyClient": {

@@ -1,7 +1,10 @@
 local ToolZone = {}
+ToolZone.LoopedJob = true
 
 --/ SHORTCUT VARIABLES /--
 local Workspace = game:GetService("Workspace")
+
+local JobService = require(script.Parent)
 
 --/ LOCAL HELPER FUNCTIONS /--
 local function DisconnectConnections(connections)
@@ -15,6 +18,10 @@ local function DisconnectConnections(connections)
 end
 
 local function GetLocationName(extraData: any): string?
+    if typeof(extraData) == "string" then
+        return extraData
+    end
+
     if typeof(extraData) ~= "table" then
         return nil
     end
@@ -63,17 +70,7 @@ local function HasEquippedTool(character: Model, toolName: string): boolean
 end
 
 local function IsPlayerInZone(player: Player, zone: BasePart): boolean
-    local character = player.Character
-    if not character then
-        return false
-    end
-
-    local overlapParams = OverlapParams.new()
-    overlapParams.FilterType = Enum.RaycastFilterType.Include
-    overlapParams.FilterDescendantsInstances = { character }
-
-    local touching = Workspace:GetPartsInPart(zone, overlapParams)
-    return #touching > 0
+    return JobService.IsPlayerInCachedZone(player, zone)
 end
 
 local function BindCharacter(job, character: Model)
@@ -104,6 +101,7 @@ end
 --/ JOB METHODS /--
 function ToolZone.StartJob(job)
     job._lastTick = os.clock()
+    job._zonePart = GetZonePart(job)
     job._toolEquipped = false
     job._connections = {}
     job._characterConnections = {}
@@ -125,8 +123,9 @@ function ToolZone.StartJob(job)
 end
 
 function ToolZone.CheckProgress(job): number
-    local zone = GetZonePart(job)
+    local zone = job._zonePart
     if not zone or not job.Owner then
+        job.ProgressActive = false
         return job.Progress
     end
 
@@ -134,7 +133,9 @@ function ToolZone.CheckProgress(job): number
     local lastTick = job._lastTick or now
     job._lastTick = now
 
-    if not job._toolEquipped or not IsPlayerInZone(job.Owner, zone) then
+    local isActive = job._toolEquipped and IsPlayerInZone(job.Owner, zone)
+    job.ProgressActive = isActive
+    if not isActive then
         return job.Progress
     end
 
@@ -147,6 +148,7 @@ function ToolZone.CleanupJob(job)
     job._connections = nil
     job._characterConnections = nil
     job._toolEquipped = false
+    job.ProgressActive = false
 end
 
 return ToolZone

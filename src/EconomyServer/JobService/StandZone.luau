@@ -1,7 +1,10 @@
 local StandZone = {}
+StandZone.LoopedJob = true
 
 --/ SHORTCUT VARIABLES /--
 local Workspace = game:GetService("Workspace")
+
+local JobService = require(script.Parent)
 
 --/ LOCAL HELPER FUNCTIONS /--
 local function GetLocationName(extraData: any): string?
@@ -39,39 +42,19 @@ local function GetZonePart(job): BasePart?
 end
 
 local function IsPlayerInZone(player: Player, zone: BasePart): boolean
-    local character = player.Character
-    if not character then
-        return false
-    end
-
-    local overlapParams = OverlapParams.new()
-    overlapParams.FilterType = Enum.RaycastFilterType.Include
-    overlapParams.FilterDescendantsInstances = { character }
-
-    local touching = Workspace:GetPartsInPart(zone, overlapParams)
-    return #touching > 0
+    return JobService.IsPlayerInCachedZone(player, zone)
 end
 
 --/ JOB METHODS /--
 function StandZone.StartJob(job)
     job._lastTick = os.clock()
-
-    while job.Completed == false do
-        local progress = StandZone.CheckProgress(job)
-        job.Progress += progress
-        task.wait(1)
-        print(progress)
-
-        if job.Progress >= job.FinishedProgress then
-            job:Finish()
-            break
-        end
-    end
+    job._zonePart = GetZonePart(job)
 end
 
 function StandZone.CheckProgress(job): number
-    local zone = GetZonePart(job)
+    local zone = job._zonePart
     if not zone or not job.Owner then
+        job.ProgressActive = false
         return job.Progress
     end
 
@@ -79,7 +62,9 @@ function StandZone.CheckProgress(job): number
     local lastTick = job._lastTick or now
     job._lastTick = now
 
-    if not IsPlayerInZone(job.Owner, zone) then
+    local inZone = IsPlayerInZone(job.Owner, zone)
+    job.ProgressActive = inZone
+    if not inZone then
         return job.Progress
     end
 

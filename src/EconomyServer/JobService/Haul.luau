@@ -1,4 +1,5 @@
 local Haul = {}
+Haul.LoopedJob = false
 
 --/ SHORTCUT VARIABLES /--
 local Workspace = game:GetService("Workspace")
@@ -104,18 +105,18 @@ local function ConnectTool(job, tool: Tool, humanoid: Humanoid)
         if haulSpeed then
             humanoid.WalkSpeed = haulSpeed
         end
+        job.ProgressActive = true
     end))
 
     table.insert(job._connections, tool.Unequipped:Connect(function()
         RestoreWalkSpeed(job)
-        if not IsStrictCarrying(extraData) then
-            return
-        end
-
-        if job._haulTool then
+        if IsStrictCarrying(extraData) and job._haulTool then
             job._haulTool:Destroy()
             job._haulTool = nil
         end
+
+        local toolParent = job._haulTool and job._haulTool.Parent
+        job.ProgressActive = toolParent == job.Owner.Backpack or toolParent == job.Owner.Character
     end))
 
     if tool.Parent == humanoid.Parent and haulSpeed then
@@ -182,6 +183,7 @@ function Haul.StartJob(job)
 
     ConnectTool(job, tool, humanoid)
     ConnectEndPrompt(job, prompt)
+    job.ProgressActive = true
 end
 
 function Haul.CheckProgress(job): number
@@ -204,6 +206,8 @@ function Haul.CleanupJob(job)
         job._haulTool:Destroy()
         job._haulTool = nil
     end
+
+    job.ProgressActive = false
 end
 
 return Haul

@@ -156,12 +156,32 @@ function JobService:CheckProgress()
     end
 end
 
+local function EndJob(job, fireClient: boolean)
+    if job.Completed then
+        return
+    end
+
+    job.Completed = true
+
+    local jobModule = GetJobModule(job.Type)
+    if jobModule then
+        jobModule.CleanupJob(job)
+    end
+
+    local jobs = JobService.ActiveJobs[job.Owner]
+    if jobs then
+        jobs[job.Id] = nil
+    end
+
+    if fireClient and job.Owner then
+        Events:WaitForChild("UpdateJobUI"):FireClient(job.Owner, { Id = job.Id })
+    end
+end
+
 function JobService:Finish()
     if not self.Owner then return end
+    if self.Completed then return end
     if self.Progress < self.FinishedProgress then return end
-
-    local jobModule = GetJobModule(self.Type)
-    if not jobModule then return end
 
     local success = EconomyManager:AddCurrency(self.Owner, self.Payout)
     if not success then
@@ -169,10 +189,13 @@ function JobService:Finish()
         return
     end
 
-    jobModule.CleanupJob(self)
-    JobService.ActiveJobs[self.Owner][self.Id] = nil
-    self.Completed = true
-    Events:WaitForChild("UpdateJobUI"):FireClient(self.Owner, { Id = self.Id })
+    EndJob(self, true)
+end
+
+function JobService:Cancel()
+    if not self.Owner then return end
+
+    EndJob(self, true)
 end
 
 function JobService:CleanupPlayer(player: Player)

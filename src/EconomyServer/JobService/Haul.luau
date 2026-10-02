@@ -97,6 +97,17 @@ local function IsToolEquipped(job): boolean
     return tool.Parent == character
 end
 
+local function CancelIfStrictCarrying(job, extraData)
+    if job.Completed then
+        return
+    end
+    if not IsStrictCarrying(extraData) then
+        return
+    end
+
+    job:Cancel()
+end
+
 local function ConnectTool(job, tool: Tool, humanoid: Humanoid)
     local extraData = job.ExtraData
     local haulSpeed = GetWalkSpeed(extraData)
@@ -110,13 +121,23 @@ local function ConnectTool(job, tool: Tool, humanoid: Humanoid)
 
     table.insert(job._connections, tool.Unequipped:Connect(function()
         RestoreWalkSpeed(job)
-        if IsStrictCarrying(extraData) and job._haulTool then
-            job._haulTool:Destroy()
-            job._haulTool = nil
+        if IsStrictCarrying(extraData) then
+            if job._haulTool then
+                job._haulTool:Destroy()
+                job._haulTool = nil
+            end
+            CancelIfStrictCarrying(job, extraData)
+            return
         end
 
         local toolParent = job._haulTool and job._haulTool.Parent
         job.ProgressActive = toolParent == job.Owner.Backpack or toolParent == job.Owner.Character
+    end))
+
+    table.insert(job._connections, tool.Destroying:Connect(function()
+        job._haulTool = nil
+        RestoreWalkSpeed(job)
+        CancelIfStrictCarrying(job, extraData)
     end))
 
     if tool.Parent == humanoid.Parent and haulSpeed then

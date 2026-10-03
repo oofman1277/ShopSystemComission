@@ -34,6 +34,15 @@
           "$path": "src/StarterGui/Currency/CurrencyUpdater.client.luau",
           "$ignoreUnknownInstances": true
         }
+      },
+      "ToolShop": {
+        "$ignoreUnknownInstances": true,
+        "$className": "ScreenGui",
+        "Scripts": {
+          "$className": "Folder",
+          "$path": "src/StarterGui/ToolShop",
+          "$ignoreUnknownInstances": true
+        }
       }
     },
 

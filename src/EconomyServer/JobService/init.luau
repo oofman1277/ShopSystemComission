@@ -7,18 +7,23 @@ JobService.GetPartsCache = {}
 
 --/ SHORTCUT VARIABLES /--
 
+local Players = game:GetService("Players")
+local Teams = game:GetService("Teams")
+local Workspace = game:GetService("Workspace")
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local EconomyServer = ServerScriptService:WaitForChild("EconomyServer")
 local EconomyShared = ReplicatedStorage:WaitForChild("EconomyShared")
 local Modules = EconomyShared:WaitForChild("Modules")
 local Events = EconomyShared:WaitForChild("Events")
-local Players = game:GetService("Players")
 
 local Constants = require(Modules:WaitForChild("Constants"))
 local EconomyManager = require(EconomyServer:WaitForChild("EconomyManager"))
 
-local Workspace = game:GetService("Workspace")
+local WAGE_INTERVAL = 900
+local KILL_PAY_MIN = 0.02
+local KILL_PAY_MAX = 0.05
 
 --/ TYPES /--
 type Job = {
@@ -251,4 +256,52 @@ function JobService:InitializeLoop()
         task.wait(Constants.JOB_LOOP_INTERVAL)
     end
 end
+
+local function PayTeamWage()
+    for _, player in Players:GetPlayers() do
+        if player.Team == Teams["Federal States"] then
+            EconomyManager:AddCurrency(player, 0.07)
+        elseif player.Team == Teams["Hostile Forces"] then
+            EconomyManager:AddCurrency(player, 0.05)
+        end
+    end
+end
+
+function JobService:InitializeWage()
+    task.spawn(function()
+        while true do
+            task.wait(WAGE_INTERVAL)
+            PayTeamWage()
+        end
+    end)
+end
+
+local function PayForKills(player: Player, kills: number, lastKills: number): number
+    local gained = math.floor(kills) - math.floor(lastKills)
+    if gained <= 0 then
+        return lastKills
+    end
+
+    for _ = 1, gained do
+        local payout = KILL_PAY_MIN + math.random() * (KILL_PAY_MAX - KILL_PAY_MIN)
+        EconomyManager:AddCurrency(player, payout)
+    end
+
+    return math.floor(kills)
+end
+
+function JobService:InitializeKillPay(player: Player)
+    local kills = player:GetAttribute("Kills")
+    local lastKills = if typeof(kills) == "number" then math.floor(kills) else 0
+
+    player:GetAttributeChangedSignal("Kills"):Connect(function()
+        local current = player:GetAttribute("Kills")
+        if typeof(current) ~= "number" then
+            return
+        end
+
+        lastKills = PayForKills(player, current, lastKills)
+    end)
+end
+
 return JobService

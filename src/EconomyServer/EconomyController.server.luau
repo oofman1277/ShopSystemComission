@@ -9,6 +9,7 @@ local JobOptions = require(JobServiceModule:WaitForChild("JobOptions"))
 local EconomySaving = require(EconomyServer:WaitForChild("EconomySaving"))
 local EconomyManager = require(EconomyServer:WaitForChild("EconomyManager"))
 local ShopService = require(EconomyServer:WaitForChild("ShopService"))
+local CurrencyShop = require(EconomyServer:WaitForChild("CurrencyShop"))
 
 --/ CORE /--
 Players.PlayerAdded:Connect(function(player: Player)
@@ -36,5 +37,6 @@ Players.PlayerRemoving:Connect(function(player: Player)
 end)
 
 JobOptions.InitializeJobNPCs()
+CurrencyShop.Initialize()
 JobService:InitializeWage()
 JobService:InitializeLoop()

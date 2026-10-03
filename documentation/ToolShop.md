@@ -2,6 +2,12 @@
 
 Players buy tools from the ToolShop screen. The list of tools, prices, and whether a tool is permanent lives in `ShopItems` (ShopService). The actual Tool objects live under that same ShopItems module in Studio.
 
+## Opening the shop
+
+Put a ProximityPrompt where the player should open the shop. Select that prompt and add the tag `ToolShopProximity` (View > Tag Editor, or the prompt's Tags).
+
+When that prompt is triggered, ToolShop turns on. The tag is the only requirement. The prompt can sit on a part, a shop model, or an NPC. Name and prompt text are up to you.
+
 ## Two kinds of tools
 
 **Permanent**  

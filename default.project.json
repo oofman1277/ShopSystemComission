@@ -43,6 +43,15 @@
           "$path": "src/StarterGui/ToolShop",
           "$ignoreUnknownInstances": true
         }
+      },
+      "CurrencyShop": {
+        "$ignoreUnknownInstances": true,
+        "$className": "ScreenGui",
+        "Scripts": {
+          "$className": "Folder",
+          "$path": "src/StarterGui/CurrencyShop",
+          "$ignoreUnknownInstances": true
+        }
       }
     },
 

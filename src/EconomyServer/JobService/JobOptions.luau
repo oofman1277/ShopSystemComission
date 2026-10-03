@@ -6,6 +6,7 @@ local JobService = require(script.Parent)
 
 local NPC_INIT_YIELD_THRESHOLD = 200
 local NPC_INIT_YIELD_EVERY = 3
+local MAX_ACTIVE_JOBS = 3
 
 --/ JOB GROUPS /--
 JobOptions.Mail = {
@@ -100,9 +101,27 @@ local function ConnectJobProximity(prompt: ProximityPrompt)
 end
 
 --/ CORE /--
+local function GetActiveJobCount(player: Player): number
+    local jobs = JobService.ActiveJobs[player]
+    if not jobs then
+        return 0
+    end
+
+    local count = 0
+    for _ in jobs do
+        count += 1
+    end
+
+    return count
+end
+
 function JobOptions.Assign(player: Player, option: any)
     if not option then
         warn("[JobOptions] Missing job option")
+        return nil
+    end
+
+    if GetActiveJobCount(player) >= MAX_ACTIVE_JOBS then
         return nil
     end
 

@@ -1,6 +1,8 @@
 local Haul = {}
 Haul.LoopedJob = false
 
+local savedWalkSpeeds = {}
+
 --/ SHORTCUT VARIABLES /--
 local Workspace = game:GetService("Workspace")
 
@@ -78,13 +80,28 @@ local function GetHaulPrompt(part: BasePart): ProximityPrompt?
     return nil
 end
 
+local function RememberWalkSpeed(job, humanoid: Humanoid, haulSpeed: number?)
+    local saved = savedWalkSpeeds[job.Owner]
+    if saved == nil then
+        saved = humanoid.WalkSpeed
+        if haulSpeed and saved == haulSpeed then
+            saved = 16
+        end
+        savedWalkSpeeds[job.Owner] = saved
+    end
+
+    job._originalWalkSpeed = saved
+end
+
 local function RestoreWalkSpeed(job)
     local humanoid = job._humanoid
-    if not humanoid or not job._originalWalkSpeed then
+    local saved = job.Owner and savedWalkSpeeds[job.Owner]
+    if not humanoid or not saved then
         return
     end
 
-    humanoid.WalkSpeed = job._originalWalkSpeed
+    humanoid.WalkSpeed = saved
+    savedWalkSpeeds[job.Owner] = nil
 end
 
 local function IsToolEquipped(job): boolean
@@ -195,7 +212,7 @@ function Haul.StartJob(job)
 
     job._connections = {}
     job._humanoid = humanoid
-    job._originalWalkSpeed = humanoid.WalkSpeed
+    RememberWalkSpeed(job, humanoid, GetWalkSpeed(extraData))
 
     local tool = template:Clone()
     job._haulTool = tool

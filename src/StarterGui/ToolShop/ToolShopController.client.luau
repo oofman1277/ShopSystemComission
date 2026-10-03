@@ -12,6 +12,10 @@ local CheckoutButton = ToolShop:WaitForChild("Checkout"):WaitForChild("Button")
 local ToolShopUI = require(scriptsFolder:WaitForChild("ToolShopUI"))
 
 local MAX_COUNT = 100
+local PURCHASE_SOUND_VOLUME = 2
+local PURCHASE_SUCCESS_SOUND_ID = "rbxassetid://131737037329240"
+local PURCHASE_FAIL_SOUND_ID = "rbxassetid://550209561"
+local CART_SOUND_ID = "rbxassetid://6042053626"
 
 -- Display only. Price, permanence, and ownership are decided on the server.
 local cachedTools = nil
@@ -32,6 +36,21 @@ local function GetCachedTool(toolId: string)
 	end
 
 	return nil
+end
+
+local function PlayPurchaseSound(soundId: string)
+	if soundId == "" or soundId == "rbxassetid://0" then
+		return
+	end
+
+	local sound = Instance.new("Sound")
+	sound.SoundId = soundId
+	sound.Volume = PURCHASE_SOUND_VOLUME
+	sound.Parent = ToolShop
+	sound.Ended:Once(function()
+		sound:Destroy()
+	end)
+	sound:Play()
 end
 
 local function ClearCart()
@@ -78,10 +97,12 @@ local function AddTool(toolId: string)
 	local count = cart[toolId] or 0
 	if toolData.Permanent then
 		SetCartCount(toolId, if count > 0 then 0 else 1)
+		PlayPurchaseSound(CART_SOUND_ID)
 		return
 	end
 
 	SetCartCount(toolId, math.min(count + 1, MAX_COUNT))
+	PlayPurchaseSound(CART_SOUND_ID)
 end
 
 local function RemoveOne(toolId: string)
@@ -91,6 +112,7 @@ local function RemoveOne(toolId: string)
 	end
 
 	SetCartCount(toolId, count - 1)
+	PlayPurchaseSound(CART_SOUND_ID)
 end
 
 local function HasCartItems(): boolean
@@ -148,10 +170,12 @@ FetchToolData.OnClientEvent:Connect(ApplyCatalog)
 PurchaseTools.OnClientEvent:Connect(function(success: boolean)
 	if success then
 		purchaseSucceeded = true
+		PlayPurchaseSound(PURCHASE_SUCCESS_SOUND_ID)
 		return
 	end
 
 	checkoutPending = false
+	PlayPurchaseSound(PURCHASE_FAIL_SOUND_ID)
 end)
 
 CheckoutButton.MouseButton1Click:Connect(Checkout)
